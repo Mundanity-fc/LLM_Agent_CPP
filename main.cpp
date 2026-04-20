@@ -14,11 +14,14 @@ namespace net = boost::asio;
 namespace ssl = net::ssl;
 
 int main() {
+#ifdef __WIN32__
+    SetConsoleOutputCP(65001);
+#endif
     try {
         // 1. 设置必要的上下文
         const std::string host = "api.deepseek.com";
         const std::string port = "443";
-        const std::string target = "/";
+        const std::string target = "/chat/completions";
 
         net::io_context ioc;
 
@@ -46,7 +49,7 @@ int main() {
         req.set(http::field::host, host);
         req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(http::field::content_type, "application/json");
-        req.set(http::field::authorization, "Bearer $APIKEY}");
+        req.set(http::field::authorization, "Bearer {$APIKEY}");
 
         // 设置请求体数据内容
         req.body() = R"({
