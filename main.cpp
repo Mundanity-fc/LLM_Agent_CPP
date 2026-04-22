@@ -9,7 +9,9 @@
 
 int main() {
 #ifdef __WIN32__
-    SetConsoleOutputCP(65001);
+    SetConsoleCP(CP_UTF8);
+    SetConsoleOutputCP(CP_UTF8);
+    setlocale(LC_ALL, ".UTF8");
 #endif
     // 配置读取
     boost::json::array providers;

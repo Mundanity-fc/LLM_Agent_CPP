@@ -56,7 +56,8 @@ void LLM_Client::shutdown() {
     }
 }
 
-void LLM_Client::switchProvider(std::string host, std::string port, std::string target, std::string apikey) {
+void LLM_Client::switchProvider(std::string model, std::string host, std::string port, std::string target, std::string apikey) {
+    this->model_ = std::move(model);
     this->host_ = std::move(host);
     this->port_ = std::move(port);
     this->target_ = std::move(target);
@@ -82,7 +83,7 @@ const std::string &LLM_Client::apikey() const {
 void LLM_Client::sendMessage(const boost::json::array& message) {
     this->create_request_head();
     boost::json::object body;
-    body["model"] = "deepseek-chat";
+    body["model"] = this->model_;
     body["messages"] = message;
     body["stream"] = true;
     this->request_.body() = boost::json::serialize(body);

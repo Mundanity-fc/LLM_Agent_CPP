@@ -16,7 +16,7 @@ public:
 
     void shutdown();
 
-    void switchProvider(std::string host, std::string port, std::string target, std::string apikey);
+    void switchProvider(std::string model, std::string host, std::string port, std::string target, std::string apikey);
 
     boost::beast::ssl_stream<boost::beast::tcp_stream> &stream();
 
