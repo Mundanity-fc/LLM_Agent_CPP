@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <boost/json.hpp>
 #include <boost/beast.hpp>
@@ -9,15 +10,24 @@
 
 
 int main() {
+    std::fstream env_config("./env.json", std::ios::in);
+    std::string content;
+    if(env_config.good()) {
+        content = std::string ((std::istreambuf_iterator<char>(env_config)), std::istreambuf_iterator<char>());
+    }
+    env_config.close();
+    boost::json::value config = boost::json::parse(content);
+    boost::json::array providers = config.at("providers").as_array();
+    boost::json::object deepkseek = providers[0].as_object();
 #ifdef __WIN32__
     SetConsoleOutputCP(65001);
 #endif
     try {
         // 1. 设置必要的上下文
-        const std::string host = "api.deepseek.com";
-        const std::string port = "443";
-        const std::string target = "/chat/completions";
-
+        const std::string host = deepkseek.at("host").as_string().c_str();
+        const std::string port = deepkseek.at("port").as_string().c_str();
+        const std::string target = deepkseek.at("target").as_string().c_str();
+        const std::string apikey = deepkseek.at("apikey").as_string().c_str();
         boost::asio::io_context ioc;
 
         // 1. SSL 上下文初始化 (TLS 客户端)
@@ -44,7 +54,7 @@ int main() {
         req.set(boost::beast::http::field::host, host);
         req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(boost::beast::http::field::content_type, "application/json");
-        req.set(boost::beast::http::field::authorization, "Bearer ${APIKEY}");
+        req.set(boost::beast::http::field::authorization, "Bearer "+apikey);
 
         // 设置请求体数据内容
         req.body() = R"({
@@ -74,7 +84,9 @@ int main() {
         char body_buf[4096];
         boost::beast::error_code ec;
         std::string accumulator;
+        std::string total_response = "";
         while(!parser.is_done()) {
+
             // 绑定当前读取使用的缓冲区
             parser.get().body().data = body_buf;
             parser.get().body().size = sizeof(body_buf);
@@ -108,23 +120,12 @@ int main() {
                         response_content = first_choice.at("content").as_string().c_str();
                     }
                     std::cout << response_content << std::flush;
+                    total_response += response_content;
                 }
             }
         }
         std::cout << "\n--- Stream Finished ---" << std::endl;
-
-        // boost::beast::http::response<boost::beast::http::dynamic_body> res;
-        // boost::beast::http::read(stream, buffer, res);
-        // std::string response_content;
-        // {
-        //     std::string body_str = boost::beast::buffers_to_string(res.body().data());
-        //     boost::json::value json_body = boost::json::parse(body_str);
-        //     boost::json::array choices = json_body.at("choices").as_array();
-        //     boost::json::object first_choice = choices.at(0).as_object().at("message").as_object();
-        //     response_content = first_choice.at("content").as_string().c_str();
-        // }
-        // // 输出响应结果
-        // std::cout << response_content << std::endl;
+        std::cout << total_response << std::endl;
 
         // 6. 优雅地关闭连接
         auto shutdown_ec = stream.shutdown(ec);
