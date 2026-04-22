@@ -26,7 +26,7 @@ public:
 
     [[nodiscard]] const std::string &apikey() const;
 
-    void sentMessage(const boost::json::array& message);
+    void sendMessage(const boost::json::array& message);
 
     std::string getResponse();
 

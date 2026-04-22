@@ -35,17 +35,18 @@ int main() {
         connection.connect();
 
         Message msg;
-        msg.editSystemPrompt("你是一个AI助理");
+        msg.addSystemPrompt("你是一个AI助理");
 
         std::cout <<"系统提示词：你是一个AI助理" << std::endl;
         std::cout <<"用户输入：";
         std::string prompt;
         std::cin >> prompt;
         while (prompt != "quit") {
-            msg.editUserPrompt(prompt);
-            connection.sentMessage(msg.getJsonPrompt());
+            msg.addUserPrompt(prompt);
+            connection.sendMessage(msg.getJsonPrompt());
             std::cout << "模型回答：";
-            connection.getResponse();
+            std::string assistantResponse = connection.getResponse();
+            msg.addAssistantPrompt(assistantResponse);
             std::cout<<std::endl;
             std::cout <<"用户输入：";
             std::cin >> prompt;

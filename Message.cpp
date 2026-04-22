@@ -1,23 +1,36 @@
 #include "Message.h"
 
-void Message::editSystemPrompt(const std::string &newPrompt) {
-    this->systemPrompt = newPrompt;
+void Message::addSystemPrompt(const std::string &newPrompt) {
+    boost::json::object systemPrompt;
+    systemPrompt["role"] = "system";
+    systemPrompt["content"] = newPrompt;
+    history.push_back(systemPrompt);
+    totalHistory++;
 }
 
-void Message::editUserPrompt(const std::string &newPrompt) {
-    this->userPrompt = newPrompt;
+void Message::addUserPrompt(const std::string &newPrompt) {
+    boost::json::object userPrompt;
+    userPrompt["role"] = "user";
+    userPrompt["content"] = newPrompt;
+    history.push_back(userPrompt);
+    totalHistory++;
+    totalUserHistory++;
+}
+
+void Message::addAssistantPrompt(const std::string &newPrompt) {
+    boost::json::object assistantPrompt;
+    assistantPrompt["role"] = "assistant";
+    assistantPrompt["content"] = newPrompt;
+    history.push_back(assistantPrompt);
+    totalHistory++;
+    totalAssistantHistory++;
 }
 
 boost::json::array Message::getJsonPrompt() const {
-    boost::json::object systemPrompt;
-    systemPrompt["role"] = "system";
-    systemPrompt["content"] = this->systemPrompt;
-    boost::json::object userPrompt;
-    userPrompt["role"] = "user";
-    userPrompt["content"] = this->userPrompt;
     boost::json::array prompt;
-    prompt.push_back(systemPrompt);
-    prompt.push_back(userPrompt);
+    for (const auto& item : history) {
+        prompt.push_back(item);
+    }
     return prompt;
 }
 

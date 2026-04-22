@@ -4,13 +4,16 @@
 class Message {
 public:
     Message(){}
-    void editSystemPrompt(const std::string& newPrompt);
-    void editUserPrompt(const std::string& newPrompt);
+    void addSystemPrompt(const std::string& newPrompt);
+    void addUserPrompt(const std::string& newPrompt);
+    void addAssistantPrompt(const std::string& newPrompt);
 
     [[nodiscard]] boost::json::array getJsonPrompt() const;
     [[nodiscard]] std::string getStringPrompt() const;
 private:
-    std::string systemPrompt;
-    std::string userPrompt;
+    std::vector<boost::json::object> history;
+    int totalHistory = 0;
+    int totalUserHistory = 0;
+    int totalAssistantHistory = 0;
 };
 

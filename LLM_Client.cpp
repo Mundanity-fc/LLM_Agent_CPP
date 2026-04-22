@@ -78,7 +78,7 @@ const std::string &LLM_Client::apikey() const {
     return apikey_;
 }
 
-void LLM_Client::sentMessage(const boost::json::array& message) {
+void LLM_Client::sendMessage(const boost::json::array& message) {
     this->create_request_head();
     boost::json::object body;
     body["model"] = "deepseek-chat";
