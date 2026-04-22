@@ -10,7 +10,7 @@
 
 class LLM_Client {
 public:
-    LLM_Client(std::string host, std::string port, std::string target, std::string apikey);
+    LLM_Client(std::string model, std::string host, std::string port, std::string target, std::string apikey);
 
     void connect();
 
@@ -31,6 +31,7 @@ public:
     std::string getResponse();
 
 private:
+    std::string model_;
     std::string host_;
     std::string port_;
     std::string target_;

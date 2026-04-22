@@ -13,7 +13,7 @@ int main() {
 #endif
     // 配置读取
     boost::json::array providers;
-    boost::json::object deepkseek;
+    boost::json::object model;
     {
         std::fstream env_config("./env.json", std::ios::in);
         std::string content;
@@ -23,15 +23,16 @@ int main() {
         env_config.close();
         boost::json::value config = boost::json::parse(content);
         providers = config.at("providers").as_array();
-        deepkseek = providers[0].as_object();
+        model = providers[0].as_object();
     }
     try {
-        const std::string host = deepkseek.at("host").as_string().c_str();
-        const std::string port = deepkseek.at("port").as_string().c_str();
-        const std::string target = deepkseek.at("target").as_string().c_str();
-        const std::string apikey = deepkseek.at("apikey").as_string().c_str();
+        const std::string name = model.at("model").as_string().c_str();
+        const std::string host = model.at("host").as_string().c_str();
+        const std::string port = model.at("port").as_string().c_str();
+        const std::string target = model.at("target").as_string().c_str();
+        const std::string apikey = model.at("apikey").as_string().c_str();
 
-        LLM_Client connection(host, port, target, apikey);
+        LLM_Client connection(name, host, port, target, apikey);
         connection.connect();
 
         Message msg;

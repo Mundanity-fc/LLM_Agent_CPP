@@ -6,8 +6,9 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
-LLM_Client::LLM_Client(std::string host, std::string port, std::string target, std::string apikey)
-    : host_(std::move(host)),
+LLM_Client::LLM_Client(std::string model, std::string host, std::string port, std::string target, std::string apikey)
+    : model_(std::move(model)),
+      host_(std::move(host)),
       port_(std::move(port)),
       target_(std::move(target)),
       apikey_(std::move(apikey)),
