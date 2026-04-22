@@ -44,16 +44,16 @@ int main() {
         req.set(boost::beast::http::field::host, host);
         req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         req.set(boost::beast::http::field::content_type, "application/json");
-        req.set(boost::beast::http::field::authorization, "Bearer {$APIKEY}");
+        req.set(boost::beast::http::field::authorization, "Bearer ${APIKEY}");
 
         // 设置请求体数据内容
         req.body() = R"({
             "model": "deepseek-chat",
             "messages": [
                 {"role": "system", "content": "你是一个AI助理"},
-                {"role": "user", "content": "输出一些你的基本信息"}
+                {"role": "user", "content": "输出一些你的基本信息，由于你的输出内容显示在命令行，因此请不要使用Markdown标记"}
             ],
-            "stream": false
+            "stream": true
         })";
         req.prepare_payload(); // 自动计算 Content-Length
 
@@ -62,19 +62,71 @@ int main() {
 
         // 5. 接收响应
         boost::beast::flat_buffer buffer;
-        boost::beast::http::response<boost::beast::http::dynamic_body> res;
-        boost::beast::http::read(stream, buffer, res);
+        // 使用 buffer_body 允许我们提供自己的缓冲区进行增量读取
+        boost::beast::http::response_parser<boost::beast::http::buffer_body> parser;
+        // 流式响应可能非常大，取消默认的 body 大小限制
+        parser.body_limit(boost::none);
+        // 首先只读取 HTTP 头部
+        boost::beast::http::read_header(stream, buffer, parser);
 
-        std::string body_str = boost::beast::buffers_to_string(res.body().data());
-        boost::json::value json_body = boost::json::parse(body_str);
-        boost::json::array choices = json_body.at("choices").as_array();
-        boost::json::object first_choice = choices.at(0).as_object().at("message").as_object();
-        std::string response_content = first_choice.at("content").as_string().c_str();
-        // 输出响应结果
-        std::cout << response_content << std::endl;
+        std::cout << "--- Stream Started (HTTP " << parser.get().result_int() << ") ---" << std::endl;
+        // 循环读取数据块
+        char body_buf[4096];
+        boost::beast::error_code ec;
+        std::string accumulator;
+        while(!parser.is_done()) {
+            // 绑定当前读取使用的缓冲区
+            parser.get().body().data = body_buf;
+            parser.get().body().size = sizeof(body_buf);
+            // 读取一块数据
+            boost::beast::http::read(stream, buffer, parser, ec);
+            // need_buffer 是正常的：表示提供的缓冲区 body_buf 已经写满，需要我们处理后再次读取
+            if(ec == boost::beast::http::error::need_buffer) {
+                ec = {};
+            } else if(ec) {
+                throw boost::beast::system_error{ec};
+            }
+            // 计算本次实际读取到了多少字节
+            size_t bytes_transferred = sizeof(body_buf) - parser.get().body().size;
+            if (bytes_transferred > 0) {
+                // 1. 将新到达的碎片数据追加到累加器中
+                accumulator.append(body_buf, bytes_transferred);
+                // 2. 循环处理累加器中的完整消息（处理 SSE 协议的 \n\n 边界）
+                size_t pos;
+                // SSE 规范中，一个完整的事件以双换行符结束
+                while ((pos = accumulator.find("\n\n")) != std::string::npos) {
+                    std::string sse_event = accumulator.substr(0, pos).erase(0, 6);// 删除data前缀
+                    if (sse_event == "[DONE]") {
+                        break;
+                    }
+                    accumulator.erase(0, pos + 2);
+                    std::string response_content;
+                    {
+                        boost::json::value json_body = boost::json::parse(sse_event);
+                        boost::json::array choices = json_body.at("choices").as_array();
+                        boost::json::object first_choice = choices.at(0).as_object().at("delta").as_object();
+                        response_content = first_choice.at("content").as_string().c_str();
+                    }
+                    std::cout << response_content << std::flush;
+                }
+            }
+        }
+        std::cout << "\n--- Stream Finished ---" << std::endl;
+
+        // boost::beast::http::response<boost::beast::http::dynamic_body> res;
+        // boost::beast::http::read(stream, buffer, res);
+        // std::string response_content;
+        // {
+        //     std::string body_str = boost::beast::buffers_to_string(res.body().data());
+        //     boost::json::value json_body = boost::json::parse(body_str);
+        //     boost::json::array choices = json_body.at("choices").as_array();
+        //     boost::json::object first_choice = choices.at(0).as_object().at("message").as_object();
+        //     response_content = first_choice.at("content").as_string().c_str();
+        // }
+        // // 输出响应结果
+        // std::cout << response_content << std::endl;
 
         // 6. 优雅地关闭连接
-        boost::beast::error_code ec;
         auto shutdown_ec = stream.shutdown(ec);
         if (shutdown_ec == boost::asio::error::eof || shutdown_ec == boost::asio::ssl::error::stream_truncated) {
             shutdown_ec = {};
