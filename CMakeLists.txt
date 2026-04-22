@@ -8,7 +8,11 @@ find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS json)
 
 
-add_executable(LLM_Agent main.cpp)
+add_executable(LLM_Agent
+        main.cpp
+        LLM_Client.cpp
+        Message.cpp
+)
 
 target_link_libraries(LLM_Agent PRIVATE
         OpenSSL::SSL
