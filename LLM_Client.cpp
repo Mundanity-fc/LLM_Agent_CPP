@@ -151,12 +151,13 @@ std::string LLM_Client::getResponse() {
                         continue;
                     }
                     // 跳过event/id等非data字段行
-                    if (line.rfind("data:", 0) != 0) {
+                    if (!line.starts_with("data:")) {
                         continue;
                     }
 
                     // 提取data字段值，兼容"data:"和"data: "两种格式
-                    std::string data = line.substr(5);
+                    constexpr size_t DATA_PREFIX_LEN = 5; // length of "data:"
+                    std::string data = line.substr(DATA_PREFIX_LEN);
                     if (!data.empty() && data.front() == ' ') {
                         data.erase(0, 1);
                     }
