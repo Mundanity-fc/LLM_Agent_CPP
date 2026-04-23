@@ -107,7 +107,8 @@ std::string LLM_Client::getResponse() {
     char body_buf[4096];
     boost::beast::error_code ec;
     std::string accumulator;
-    while(!parser.is_done()) {
+    bool done = false;
+    while(!parser.is_done() && !done) {
         // 绑定当前读取使用的缓冲区
         parser.get().body().data = body_buf;
         parser.get().body().size = sizeof(body_buf);
@@ -127,24 +128,68 @@ std::string LLM_Client::getResponse() {
             // 循环处理累加器中的完整消息
             size_t pos;
             // SSE规范中，一个完整的事件以双换行符结束
-            while ((pos = accumulator.find("\n\n")) != std::string::npos) {
-                std::string sse_event = accumulator.substr(0, pos).erase(0, 6);// 删除data前缀
-                if (sse_event == "[DONE]") {
-                    break;
-                }
+            while (!done && (pos = accumulator.find("\n\n")) != std::string::npos) {
+                std::string sse_event_block = accumulator.substr(0, pos);
                 accumulator.erase(0, pos + 2);
-                std::string response_content;
-                // 文本获取
-                {
-                    boost::json::value json_body = boost::json::parse(sse_event);
-                    boost::json::array choices = json_body.at("choices").as_array();
-                    boost::json::object first_choice = choices.at(0).as_object().at("delta").as_object();
-                    response_content = first_choice.at("content").as_string().c_str();
+
+                // 逐行解析SSE事件块，兼容注释行、event/id行等非标准内容
+                size_t line_start = 0;
+                while (line_start < sse_event_block.size()) {
+                    size_t line_end = sse_event_block.find('\n', line_start);
+                    if (line_end == std::string::npos) {
+                        line_end = sse_event_block.size();
+                    }
+                    std::string line = sse_event_block.substr(line_start, line_end - line_start);
+                    // 去除行尾可能存在的\r（兼容\r\n换行符）
+                    if (!line.empty() && line.back() == '\r') {
+                        line.pop_back();
+                    }
+                    line_start = line_end + 1;
+
+                    // 跳过SSE注释行（如 ": OPENROUTER PROCESSING"）及空行
+                    if (line.empty() || line.front() == ':') {
+                        continue;
+                    }
+                    // 跳过event/id等非data字段行
+                    if (line.rfind("data:", 0) != 0) {
+                        continue;
+                    }
+
+                    // 提取data字段值，兼容"data:"和"data: "两种格式
+                    std::string data = line.substr(5);
+                    if (!data.empty() && data.front() == ' ') {
+                        data.erase(0, 1);
+                    }
+
+                    if (data == "[DONE]") {
+                        done = true;
+                        break;
+                    }
+
+                    // 解析JSON并提取增量文本内容
+                    boost::json::error_code json_ec;
+                    boost::json::value json_body = boost::json::parse(data, json_ec);
+                    if (json_ec) {
+                        continue;
+                    }
+                    const auto* choices = json_body.as_object().if_contains("choices");
+                    if (!choices || !choices->is_array() || choices->as_array().empty()) {
+                        continue;
+                    }
+                    const auto* delta = choices->as_array().at(0).as_object().if_contains("delta");
+                    if (!delta || !delta->is_object()) {
+                        continue;
+                    }
+                    const auto* content = delta->as_object().if_contains("content");
+                    if (!content || !content->is_string()) {
+                        continue;
+                    }
+                    std::string response_content = content->as_string().c_str();
+                    // 文本流式输出
+                    std::cout << response_content << std::flush;
+                    // 返回文本拼接
+                    total_response += response_content;
                 }
-                // 文本流式输出
-                std::cout << response_content << std::flush;
-                // 返回文本拼接
-                total_response += response_content;
             }
         }
     }
