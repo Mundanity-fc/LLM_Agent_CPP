@@ -86,6 +86,9 @@ void LLM_Client::sendMessage(const boost::json::array& message) {
     body["model"] = this->model_;
     body["messages"] = message;
     body["stream"] = true;
+    boost::json::object thinking;
+    thinking["type"] = "disabled";
+    body["thinking"] = thinking;
     this->request_.body() = boost::json::serialize(body);
     this->request_.prepare_payload();
     boost::beast::http::write(this->stream_, this->request_);

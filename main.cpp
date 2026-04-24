@@ -4,8 +4,8 @@
 #include <boost/json.hpp>
 #include <boost/beast.hpp>
 
-#include "LLM_Client.h"
-#include "Message.h"
+#include "llm/LLM_Client.h"
+#include "components/Message.h"
 
 int main() {
 #ifdef __WIN32__
