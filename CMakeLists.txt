@@ -18,6 +18,7 @@ add_executable(LLM_Agent
         providers/openrouter.h
         providers/google.cpp
         providers/google.h
+        providers/provider.h
 )
 
 target_link_libraries(LLM_Agent PRIVATE
