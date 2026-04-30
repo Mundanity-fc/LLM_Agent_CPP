@@ -2,17 +2,20 @@
 #include <iostream>
 #include <utility>
 
-deepseek::deepseek(std::string model, std::string host, std::string port, std::string target, std::string apikey) {
-    this->model = std::move(model);
-    this->host = std::move(host);
-    this->port = std::move(port);
-    this->target = std::move(target);
-    this->apikey = std::move(apikey);
+deepseek::deepseek() {
     this->hasStreamMode = true;
     this->streamMode = false;
     this->hasThinkingMode = true;
     this->thinkingMode = false;
     this->isStateless = false;
+}
+
+void deepseek::setApiConfig(std::string model, std::string host, std::string port, std::string target, std::string apikey) {
+    this->model = std::move(model);
+    this->host = std::move(host);
+    this->port = std::move(port);
+    this->target = std::move(target);
+    this->apikey = std::move(apikey);
 }
 
 boost::json::object deepseek::createMessage(std::string& message) {

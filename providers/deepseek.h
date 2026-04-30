@@ -4,7 +4,8 @@
 
 class deepseek: public provider {
 public:
-    deepseek(std::string model, std::string host, std::string port, std::string target, std::string apikey);
+    deepseek();
+    void setApiConfig(std::string model, std::string host, std::string port, std::string target, std::string apikey);
     boost::json::object createMessage(std::string& message) override;
     Message& receiveMessage(boost::beast::ssl_stream<boost::beast::tcp_stream> stream) override;
     void printInformation() override;
