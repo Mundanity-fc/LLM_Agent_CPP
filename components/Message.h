@@ -1,19 +1,24 @@
+#pragma once
 #include <string>
-#include <boost/json.hpp>
+#include <utility>
+
+enum MessageRole {
+    System,
+    User,
+    Assistant
+};
 
 class Message {
 public:
-    Message(){}
-    void addSystemPrompt(const std::string& newPrompt);
-    void addUserPrompt(const std::string& newPrompt);
-    void addAssistantPrompt(const std::string& newPrompt);
+    explicit Message(const MessageRole roleNumber, std::string content = ""): role(roleNumber), content(std::move(content)), tokenCount(0) {}
+    void updateContent(std::string& content);
+    void updateContent(const char * str);
+    void updateTokenCount(int tokenCount);
+    ~Message() = default;
 
-    [[nodiscard]] boost::json::array getJsonPrompt() const;
-    [[nodiscard]] std::string getStringPrompt() const;
+
 private:
-    std::vector<boost::json::object> history;
-    int totalHistory = 0;
-    int totalUserHistory = 0;
-    int totalAssistantHistory = 0;
+    MessageRole role;
+    int tokenCount;
+    std::string content;
 };
-
