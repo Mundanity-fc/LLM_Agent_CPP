@@ -10,15 +10,12 @@ find_package(Boost REQUIRED COMPONENTS json)
 
 add_executable(LLM_Agent
         main.cpp
-        llm/LLM_Client.cpp
-        components/Message.cpp
-        providers/deepseek.cpp
-        providers/deepseek.h
-        providers/openrouter.cpp
-        providers/openrouter.h
-        providers/google.cpp
-        providers/google.h
-        providers/provider.h
+        providers/Provider.h
+        providers/OpenAICompatibleProvider.cpp
+        providers/OpenAICompatibleProvider.h
+        llm/HttpClient.cpp
+        llm/HttpClient.h
+        components/ProviderConfig.h
 )
 
 target_link_libraries(LLM_Agent PRIVATE
