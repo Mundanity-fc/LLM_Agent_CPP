@@ -14,10 +14,23 @@ int main() {
         "/v1/chat/completions",
         "key"
     });
-
     HttpClient client(local.getConfig());
     client.sendMessage();
     std::cout << client.receiveMessage().body() << std::endl;
+
+
+    OpenAICompatibleProvider ds({
+        "ds",
+        "deepseek-v4-pro",
+        "api.deepseek.com",
+        "443",
+        "https",
+        "/chat/completions",
+        "KEY"
+    });
+    HttpClient client2(ds.getConfig());
+    client2.sendMessage();
+    std::cout << client2.receiveMessage().body() << std::endl;
 
     return 0;
 }

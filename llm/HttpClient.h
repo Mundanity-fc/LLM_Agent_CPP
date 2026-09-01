@@ -3,6 +3,7 @@
 #include <string>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <boost/beast/ssl.hpp>
 
 class HttpClient {
 public:
@@ -19,5 +20,8 @@ private:
     std::string protocol;
     std::string apikey;
     boost::asio::io_context ioc;
-    boost::beast::tcp_stream stream{ioc};
+    boost::asio::ssl::context sslContext{boost::asio::ssl::context::tls_client};
+    typedef boost::beast::tcp_stream httpStream;
+    typedef boost::beast::ssl_stream<boost::beast::tcp_stream> httpsStream;
+    std::variant<std::monostate, httpStream, httpsStream> stream;
 };
