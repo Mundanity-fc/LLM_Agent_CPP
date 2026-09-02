@@ -1,5 +1,4 @@
 #include "Conversation.h"
-#include <boost/json/serialize.hpp>
 
 Conversation::Conversation() {
     messageHistory.reserve(10000);
@@ -14,8 +13,18 @@ void Conversation::clear() {
     messageHistory.reserve(100000);
 }
 
-void Conversation::append(const ChatMessage& message) {
+bool Conversation::append(const ChatMessage& message) {
     messageHistory.push_back(message);
+    return true;
+}
+
+bool Conversation::append(const ProviderResponse& modelResponse){
+    ChatMessage assistantContent = {
+        MessageRole::Assistant,
+        boost::json::value(modelResponse.text)
+    };
+    messageHistory.push_back(assistantContent);
+    return true;
 }
 
 const std::vector<ChatMessage> & Conversation::messages() const noexcept {

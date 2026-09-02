@@ -1,11 +1,14 @@
 #pragma once
 #include "./Chat.h"
+#include "../providers/Provider.h"
 
 class Conversation {
 public:
     Conversation();
 
-    void append(const ChatMessage& message);
+    bool append(const ChatMessage& message);
+
+    bool append(const ProviderResponse& modelResponse);
 
     [[nodiscard]]
     const std::vector<ChatMessage>& messages() const noexcept;
