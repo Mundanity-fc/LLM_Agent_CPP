@@ -61,5 +61,6 @@ int main() {
         std::cout <<"用户输入：";
         std::cin >> prompt;
     }
+    std::cout << "对话结束，历史对话如下：\n" << ChatRequestBuilder::build(conversation).messages << std::endl;
     return 0;
 }
