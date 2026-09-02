@@ -16,6 +16,11 @@ add_executable(LLM_Agent
         llm/HttpClient.cpp
         llm/HttpClient.h
         components/ProviderConfig.h
+        components/Chat.h
+        components/Conversation.cpp
+        components/Conversation.h
+        components/ChatRequestBuilder.cpp
+        components/ChatRequestBuilder.h
 )
 
 target_link_libraries(LLM_Agent PRIVATE

@@ -10,7 +10,10 @@ ProviderConfig OpenAICompatibleProvider::getConfig() {
 }
 
 boost::json::object OpenAICompatibleProvider::buildRequest(const ChatRequest &request) {
-    return boost::json::object{};
+    boost::json::object RequestBody;
+    RequestBody["model"] = request.model.empty() ? providerConfig.model : request.model;
+    RequestBody["messages"] = request.messages;
+    return RequestBody;
 }
 
 ProviderCapabilities OpenAICompatibleProvider::capabilities() {

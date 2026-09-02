@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/json.hpp>
 #include "../components/ProviderConfig.h"
+#include "../components/Chat.h"
 
 
 // 提供商可选功能
@@ -11,22 +12,6 @@ struct ProviderCapabilities {
     bool structuredOutput{false};
     bool reasoning{false};
     bool vision{false};
-};
-
-// 消息请求结构
-struct ChatRequest {
-    std::string model;
-    boost::json::array messages;
-
-    bool stream{false};
-    boost::json::array tools;
-    boost::json::value toolChoice;
-
-    std::optional<double> temperature;
-    std::optional<std::size_t> maxOutputTokens;
-
-    // 厂商扩展字段
-    boost::json::object extraBody;
 };
 
 // 提供商消息回复
@@ -70,5 +55,6 @@ public:
     [[nodiscard("禁止忽略")]]
     virtual ProviderResponse parseResponse(std::string_view body) = 0;
 
+    // 处理流缓存块
     virtual std::vector<StreamEvent> parseStreamChunk(std::string_view chunk) = 0;
 };

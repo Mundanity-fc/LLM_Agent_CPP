@@ -38,7 +38,7 @@ HttpClient::HttpClient(const ProviderConfig& config){
     }
 }
 
-void HttpClient::sendMessage() {
+void HttpClient::sendMessage(const boost::json::object& requestBody) {
     boost::beast::http::request<boost::beast::http::string_body> request{
         boost::beast::http::verb::post,
         this->target,
@@ -48,7 +48,7 @@ void HttpClient::sendMessage() {
     request.set(boost::beast::http::field::content_type, "application/json");
     request.set(boost::beast::http::field::authorization, "Bearer "+this->apikey);
     request.set(boost::beast::http::field::accept, "application/json");
-    request.body() = R"({"model": "/home/mundanity/LLMs/Qwen3.5-2B","messages": [{"role": "user", "content": "介绍一下你自己"}]})";
+    request.body() = boost::json::serialize(requestBody);
     request.prepare_payload();
     if (protocol == "https") {
         auto& currentStream = std::get<httpsStream>(stream);
