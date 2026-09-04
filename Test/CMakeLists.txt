@@ -3,7 +3,7 @@ find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
 
 add_executable(LLM_Agent_Unit_Tests
-        SSETest.cpp
+        OutputTest.cpp
 )
 
 target_link_libraries(LLM_Agent_Unit_Tests

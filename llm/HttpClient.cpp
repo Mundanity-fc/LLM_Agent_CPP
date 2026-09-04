@@ -1,9 +1,11 @@
 #include "HttpClient.h"
+#include <iostream>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/ssl.hpp>
 #include <boost/asio/ssl/host_name_verification.hpp>
+
 
 HttpClient::HttpClient(const ProviderConfig& config){
     host = config.host;
@@ -70,6 +72,63 @@ boost::beast::http::response<boost::beast::http::string_body> HttpClient::receiv
         boost::beast::http::read(currentStream, buffer, response);
     }
     return response;
+}
+
+
+HttpResponseHead HttpClient::receiveStream(const BodyChunkHandler& onChunk) {
+    if (protocol == "https") {
+        return readStream(std::get<httpsStream>(stream), onChunk);
+    }
+    return readStream(std::get<httpStream>(stream), onChunk);
+}
+
+template<class Stream>
+HttpResponseHead HttpClient::readStream(Stream& stream, const BodyChunkHandler& onChunk) {
+    boost::beast::flat_buffer readBuffer;
+
+    boost::beast::http::response_parser<boost::beast::http::buffer_body> parser;
+    parser.body_limit(boost::none);
+    boost::beast::http::read_header(stream,readBuffer,parser);
+
+    HttpResponseHead head{
+        .status = parser.get().result_int(),
+        .headers = parser.get().base()
+    };
+
+    if (head.status < 200 || head.status >= 300) {
+        // 错误响应通常需要完整读取后交给 Provider 解析
+    }
+
+    std::array<char, 4096> bodyBuffer{};
+
+    while (!parser.is_done()) {
+        parser.get().body().data =
+            bodyBuffer.data();
+
+        parser.get().body().size =
+            bodyBuffer.size();
+
+        boost::beast::error_code ec;
+
+        boost::beast::http::read_some(stream,readBuffer,parser,ec);
+
+        const std::size_t received = bodyBuffer.size() - parser.get().body().size;
+
+        // 存在读取数据，构造 Chunk 由对应回调处理
+        if (received > 0) {
+            onChunk(std::string_view{bodyBuffer.data(),received});
+        }
+
+        if (ec ==boost::beast::http::error::need_buffer) {
+            ec = {};
+        }
+
+        if (ec) {
+            throw boost::beast::system_error{ec};
+        }
+    }
+
+    return head;
 }
 
 HttpClient::~HttpClient() {

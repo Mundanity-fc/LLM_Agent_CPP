@@ -54,18 +54,22 @@ public:
      */
     bool disableCapability(std::string capability) override;
 
-    [[nodiscard]]
+
+
+
     /**
      * @brief 检测模型是否启用流式输出
      * @return 启用了流式输出，返回真，否则为否
      */
+    [[nodiscard]]
     bool isStreaming() const;
 
-    [[nodiscard]]
+
     /**
      * @brief 检测模型是否启用思考模式
      * @return 启用了思考模式，返回真，否则为否
      */
+    [[nodiscard]]
     bool isReasoning() const;
 
     /**

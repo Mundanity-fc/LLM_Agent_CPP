@@ -1,6 +1,7 @@
 #include <utility>
-#include "OpenAICompatibleProvider.h"
 #include <iostream>
+#include "OpenAICompatibleProvider.h"
+#include "boost/json.hpp"
 
 OpenAICompatibleProvider::OpenAICompatibleProvider(ProviderConfig config) {
     providerConfig = std::move(config);
@@ -18,6 +19,9 @@ boost::json::object OpenAICompatibleProvider::buildRequest(const ChatRequest &re
         boost::json::object reasoning;
         reasoning["type"] = "enabled";
         RequestBody["thinking"] = reasoning;
+    }
+    if (providerCapabilities.streaming) {
+        RequestBody["stream"] = true;
     }
     return RequestBody;
 }
@@ -71,10 +75,59 @@ std::vector<StreamEvent> OpenAICompatibleProvider::parseStreamChunk(std::string_
     std::vector<StreamEvent> events;
 
     while (true) {
-
+        break;
+        // auto boundary = findSseBoundary(streamBuffer);
+        //
+        // if (!boundary) {
+        //     break;
+        // }
+        //
+        // std::string rawEvent = takeSseEvent(streamBuffer,*boundary);
+        //
+        // auto eventData = extractSseData(rawEvent);
+        //
+        // if (!eventData) {
+        //     continue;
+        // }
+        //
+        // if (*eventData == "[DONE]") {
+        //     events.push_back({
+        //         .type = StreamEvent::Type::Completed
+        //     });
+        //     continue;
+        // }
+        //
+        // boost::json::value json;
+        //
+        // try {
+        //     json = boost::json::parse(
+        //         *eventData
+        //     );
+        // } catch (
+        //     const boost::json::system_error& error
+        // ) {
+        //     events.push_back({
+        //         .type = StreamEvent::Type::Error,
+        //         .text = error.what(),
+        //         .data = *eventData
+        //     });
+        //     continue;
+        // }
+        //
+        // auto parsed = parseStreamJson(json.as_object());
+        //
+        // events.insert(
+        //     events.end(),
+        //     std::make_move_iterator(
+        //         parsed.begin()
+        //     ),
+        //     std::make_move_iterator(
+        //         parsed.end()
+        //     )
+        // );
     }
 
-    return std::vector<StreamEvent>{};
+    return events;
 }
 
 bool OpenAICompatibleProvider::enableCapability(const std::string capability) {

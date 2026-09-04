@@ -13,11 +13,11 @@ public:
      */
     void apply(const StreamEvent& event);
 
-    [[nodiscard]]
     /**
      * @brief 流式累加处理结束
      * @return 返回标准的回复对象
      */
+    [[nodiscard]]
     ProviderResponse finish() const;
 
 private:
