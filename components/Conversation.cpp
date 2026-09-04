@@ -19,11 +19,7 @@ bool Conversation::append(const ChatMessage& message) {
 }
 
 bool Conversation::append(const ProviderResponse& modelResponse){
-    ChatMessage assistantContent = {
-        MessageRole::Assistant,
-        boost::json::value(modelResponse.text)
-    };
-    messageHistory.push_back(assistantContent);
+    messageHistory.push_back(modelResponse.assistantMessage);
     return true;
 }
 

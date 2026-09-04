@@ -1,42 +1,9 @@
 #pragma once
 #include <boost/json.hpp>
-#include "../components/ProviderConfig.h"
+#include "../components/ProviderComponents.h"
+#include "../components/StreamComponents.h"
 #include "../components/Chat.h"
 
-
-// 提供商可选功能
-struct ProviderCapabilities {
-    bool streaming{false};
-    bool tools{false};
-    bool parallelToolCalls{false};
-    bool structuredOutput{false};
-    bool reasoning{false};
-    bool vision{false};
-};
-
-// 提供商消息回复
-struct ProviderResponse {
-    std::string id;
-    std::string text;
-    boost::json::array toolCalls;
-    std::string finishReason;
-    boost::json::object usage;
-    boost::json::value raw;
-};
-
-// 消息流事件
-struct StreamEvent {
-    enum class Type {
-        TextDelta,
-        ToolCallDelta,
-        Completed,
-        Error
-    };
-
-    Type type;
-    std::string text;
-    boost::json::value data;
-};
 
 // 提供商基类
 class Provider {
@@ -57,4 +24,13 @@ public:
 
     // 处理流缓存块
     virtual std::vector<StreamEvent> parseStreamChunk(std::string_view chunk) = 0;
+
+    // 启用能力
+    virtual bool enableCapability(std::string capability) = 0;
+
+    // 禁用能力
+    virtual bool disableCapability(std::string capability) = 0;
+private:
+    ProviderCapabilities providerCapabilities;
+    ProviderConfig providerConfig;
 };

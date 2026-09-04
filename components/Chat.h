@@ -12,8 +12,10 @@ enum class MessageRole {
 
 // 对话消息内容结构
 struct ChatMessage {
+    // 消息角色
     MessageRole role;
-    boost::json::value content;
+    // 消息内容
+    std::string content;
 
     std::optional<std::string> name;
     std::optional<std::string> toolCallId;

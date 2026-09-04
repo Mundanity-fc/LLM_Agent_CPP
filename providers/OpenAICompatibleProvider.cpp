@@ -1,6 +1,5 @@
 #include <utility>
 #include "OpenAICompatibleProvider.h"
-
 #include <iostream>
 
 OpenAICompatibleProvider::OpenAICompatibleProvider(ProviderConfig config) {
@@ -15,6 +14,11 @@ boost::json::object OpenAICompatibleProvider::buildRequest(const ChatRequest &re
     boost::json::object RequestBody;
     RequestBody["model"] = request.model.empty() ? providerConfig.model : request.model;
     RequestBody["messages"] = request.messages;
+    if (providerCapabilities.reasoning) {
+        boost::json::object reasoning;
+        reasoning["type"] = "enabled";
+        RequestBody["thinking"] = reasoning;
+    }
     return RequestBody;
 }
 
@@ -27,26 +31,82 @@ ProviderResponse OpenAICompatibleProvider::parseResponse(std::string_view body) 
     if (boost::json::value *err = ResponseBody.if_contains("error")) {
         std::cerr << "Error: " << err->at("message") << std::endl;
         return ProviderResponse{
-            "",
-            std::string(err->at("message").as_string()),
-            {},
-            "",
-            {},
-            boost::json::parse(body)
+            .id = "",
+            .model = "",
+            .finishReason ="Error",
+            .errorContent = std::string(err->at("message").as_string()),
+            .raw = boost::json::parse(body)
         };
     }
-    return ProviderResponse{
-        std::string(ResponseBody.at("id").as_string()),
-        std::string(ResponseBody.at("choices").as_array()[0].at("message").as_object().at("content").as_string()),
-        {},
-        std::string(ResponseBody.at("choices").as_array()[0].at("message").as_object().at("reasoning_content").as_string()),
-        {},
-        boost::json::parse(body)
+
+    if (providerCapabilities.reasoning) {
+        return ProviderResponse{
+            .id = std::string(ResponseBody.at("id").as_string()),
+            .assistantMessage = {
+                .role = MessageRole::Assistant,
+                .content = std::string(ResponseBody.at("choices").as_array()[0].at("message").as_object().at("content").as_string())
+            },
+            .reasoningOutput = {
+                .kind = ReasoningOutputKind::Trace,
+                .text = std::string(ResponseBody.at("choices").as_array()[0].at("message").as_object().at("reasoning_content").as_string()),
+            },
+            .finishReason = std::string(ResponseBody.at("choices").as_array()[0].at("finish_reason").as_string()),
+            .raw = boost::json::parse(body)
+        };
+    } else
+        return ProviderResponse{
+        .id = std::string(ResponseBody.at("id").as_string()),
+        .assistantMessage = {
+            .role = MessageRole::Assistant,
+            .content = std::string(ResponseBody.at("choices").as_array()[0].at("message").as_object().at("content").as_string())
+        },
+        .reasoningOutput = {},
+        .finishReason = std::string(ResponseBody.at("choices").as_array()[0].at("finish_reason").as_string()),
+        .raw = boost::json::parse(body)
     };
 }
 
 std::vector<StreamEvent> OpenAICompatibleProvider::parseStreamChunk(std::string_view chunk) {
+    streamBuffer.append(chunk);
+    std::vector<StreamEvent> events;
+
+    while (true) {
+
+    }
+
     return std::vector<StreamEvent>{};
+}
+
+bool OpenAICompatibleProvider::enableCapability(const std::string capability) {
+    if (capability == "streaming") {
+        providerCapabilities.streaming = true;
+        return true;
+    }
+    if (capability == "reasoning") {
+        providerCapabilities.reasoning = true;
+        return true;
+    }
+    return false;
+}
+
+bool OpenAICompatibleProvider::disableCapability(std::string capability) {
+    if (capability == "streaming") {
+        providerCapabilities.streaming = false;
+        return true;
+    }
+    if (capability == "reasoning") {
+        providerCapabilities.reasoning = false;
+        return true;
+    }
+    return false;
+}
+
+bool OpenAICompatibleProvider::isStreaming() const {
+    return providerCapabilities.streaming;
+}
+
+bool OpenAICompatibleProvider::isReasoning() const {
+    return providerCapabilities.reasoning;
 }
 
 OpenAICompatibleProvider::~OpenAICompatibleProvider() = default;

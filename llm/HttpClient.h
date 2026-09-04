@@ -1,5 +1,5 @@
 #pragma once
-#include "../components/ProviderConfig.h"
+#include "../components/ProviderComponents.h"
 #include <string>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
