@@ -1,6 +1,6 @@
 #pragma once
-#include "./Chat.h"
-#include "../providers/Provider.h"
+#include "Chat.h"
+#include "../ProviderComponents/Providers/Provider.h"
 
 class Conversation {
 public:

@@ -2,10 +2,10 @@
 #include <fstream>
 #include <filesystem>
 #include "llm/HttpClient.h"
-#include "providers/OpenAICompatibleProvider.h"
-#include "components/Conversation.h"
-#include "components/ChatRequestBuilder.h"
-#include "components/StreamResponseAccumulator.h"
+#include "Components/ProviderComponents/Providers/OpenAI/OpenAICompatibleProvider.h"
+#include "Components/MessageComponents/Conversation.h"
+#include "Components/MessageComponents/ChatRequestBuilder.h"
+#include "Components/StreamComponents/StreamResponseAccumulator.h"
 
 TEST(OutputTestWithoutStream, withoutReasoning) {
     boost::json::array providerList;
@@ -127,7 +127,7 @@ TEST(OutputTestWithStream, withoutReasoning) {
     ProviderResponse response;
     message = {
         MessageRole::System,
-        "你是一个运行在终端的智能助手，需要回答用户输入的问题。"
+        "你是一个运行在终端的智能助手，需要回答用户输入的问题，回复尽量简单，不超过20字。"
     };
     conversation.append(message);
     message.role = MessageRole::User;

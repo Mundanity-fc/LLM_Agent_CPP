@@ -1,8 +1,8 @@
 #pragma once
 #include <boost/json.hpp>
-#include "../components/ProviderComponents.h"
-#include "../components/StreamComponents.h"
-#include "../components/Chat.h"
+#include "../ProviderComponents.h"
+#include "../../StreamComponents/StreamComponents.h"
+#include "../../MessageComponents/Chat.h"
 
 
 // 提供商基类

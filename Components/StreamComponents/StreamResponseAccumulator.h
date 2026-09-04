@@ -2,8 +2,8 @@
 #include <string>
 #include <vector>
 #include "StreamComponents.h"
-#include "ProviderComponents.h"
-#include "TokenComponents.h"
+#include "../ProviderComponents/ProviderComponents.h"
+#include "../TokenComponents.h"
 
 class StreamResponseAccumulator {
 public:

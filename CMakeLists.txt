@@ -15,24 +15,25 @@ find_package(Boost REQUIRED COMPONENTS json)
 
 # 核心依赖库目标
 add_library(LLM_Agent_Lib STATIC
-        providers/Provider.h
-        providers/OpenAICompatibleProvider.cpp
-        providers/OpenAICompatibleProvider.h
+        Components/ProviderComponents/Providers/Provider.h
+        Components/ProviderComponents/Providers/OpenAI/OpenAICompatibleProvider.cpp
+        Components/ProviderComponents/Providers/OpenAI/OpenAICompatibleProvider.h
 
         llm/HttpClient.cpp
         llm/HttpClient.h
 
-        components/Chat.h
-        components/Conversation.cpp
-        components/Conversation.h
-        components/ChatRequestBuilder.cpp
-        components/ChatRequestBuilder.h
-        components/StreamResponseAccumulator.cpp
-        components/StreamResponseAccumulator.h
-        components/ProviderComponents.h
-        components/StreamComponents.h
-        components/TokenComponents.h
-        components/ReasoningComponent.h
+        Components/MessageComponents/Chat.h
+        Components/MessageComponents/Conversation.cpp
+        Components/MessageComponents/Conversation.h
+        Components/MessageComponents/ChatRequestBuilder.cpp
+        Components/MessageComponents/ChatRequestBuilder.h
+        Components/StreamComponents/StreamResponseAccumulator.cpp
+        Components/StreamComponents/StreamResponseAccumulator.h
+        Components/StreamComponents/StreamComponents.h
+        Components/StreamComponents/StreamComponents.cpp
+        Components/ProviderComponents/ProviderComponents.h
+        Components/TokenComponents.h
+        Components/ReasoningComponent.h
 )
 
 # 核心依赖库位置

@@ -3,9 +3,9 @@
 #include <filesystem>
 #include <string>
 #include "llm/HttpClient.h"
-#include "providers/OpenAICompatibleProvider.h"
-#include "components/Conversation.h"
-#include "components/ChatRequestBuilder.h"
+#include "Components/ProviderComponents/Providers/OpenAI/OpenAICompatibleProvider.h"
+#include "Components/MessageComponents/Conversation.h"
+#include "Components/MessageComponents/ChatRequestBuilder.h"
 
 int main() {
 #ifdef __WIN32__

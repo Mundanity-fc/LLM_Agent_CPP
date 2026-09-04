@@ -3,7 +3,7 @@
 #include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
 
-#include "ReasoningComponent.h"
+#include "../ReasoningComponent.h"
 
 void StreamResponseAccumulator::apply(const StreamEvent& event){
     switch (event.type) {

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
-#include "Chat.h"
-#include "ReasoningComponent.h"
+#include "../MessageComponents/Chat.h"
+#include "../ReasoningComponent.h"
 
 // 具体连接类型结构
 struct ProviderConfig {

@@ -20,3 +20,13 @@ struct StreamEvent {
     std::string text;
     boost::json::value data;
 };
+
+//  SSE 消息的边界定位
+struct SSEBoundary {
+    std::size_t position;
+    std::size_t length;
+};
+
+std::optional<SSEBoundary> findSSEBoundary(const std::string &buffer);
+std::string takeSSEEvent(std::string &buffer, const SSEBoundary &boundary);
+StreamEvent parseStreamJson(boost::json::object &eventObject);
